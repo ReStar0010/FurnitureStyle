@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Furniture API Tester</title>
+  <style>
+    body { font-family: sans-serif; padding: 1rem; }
+    form { margin-bottom: 2rem; }
+    .item { display: flex; align-items: flex-start; margin: 1rem 0; }
+    .item img { max-width: 120px; margin-right: 1rem; }
+    .item .info { line-height: 1.4; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <h1>Furniture API Tester</h1>
+
+  <!-- IMAGE + COLOR SEARCH -->
+  <section>
+    <h2>1. Image + Color Search</h2>
+    <form id="upload-form">
+      <input type="file" name="image" accept="image/*" required />
+      <label>Color:</label>
+      <select name="color" id="color">
+        <option value="original">原本</option>
+        <option value="complementary">互補色</option>
+        <option value="monochrome">單色</option>
+        <option value="analogous">類似色</option>
+      </select>
+      <button type="submit">Search by Image</button>
+    </form>
+
+    <div id="image-result" class="hidden">
+      <h3>Detected → Type: <span id="type-display"></span>  Style: <span id="style-display"></span></h3>
+      <div id="shopping-display"></div>
+    </div>
+  </section>
+
+  <hr/>
+
+  <!-- TEXT SEARCH (unchanged) -->
+  <section>
+    <h2>2. Text Search</h2>
+    <form id="text-form">
+      <input type="text" name="query" placeholder="e.g. mid-century chair" required style="width:300px" />
+      <label>Color:</label>
+      <select name="color" id="color">
+        <option value="original">原本</option>
+        <option value="complementary">互補色</option>
+        <option value="monochrome">單色</option>
+        <option value="analogous">類似色</option>
+      </select>
+      <button type="submit">Search by Text</button>
+    </form>
+    <div id="text-result" class="hidden"<h3>Detected → Type: <span id="type-display-text"></span>  Style: <span id="style-display-text"></span></h3>>
+      <h3>Text Results</h3>
+      <div id="items-display"></div>
+    </div>
+  </section>
+
+<script>
+  function getCookie(name) {
+    const match = document.cookie.match('(^|;)\\s*'+name+'\\s*=\\s*([^;]+)');
+    return match ? match.pop() : '';
+  }
+
+  // build headers for session‐protected endpoints
+  function authHeaders(json=false) {
+    const headers = {
+      'X-CSRFToken': getCookie('csrftoken'),
+    };
+    if (json) {
+      headers['Content-Type'] = 'application/json';
+    }
+    return headers;
+  }
+  // — IMAGE + COLOR SEARCH —
+  document.getElementById('upload-form').onsubmit = async e => {
+    e.preventDefault();
+    const fd = new FormData(e.target);
+    fd.append('color', document.getElementById('color').value);
+
+    // reset
+    document.getElementById('type-display').textContent = '';
+    document.getElementById('style-display').textContent = '';
+    const disp = document.getElementById('shopping-display');
+    disp.innerHTML = '';
+    document.getElementById('image-result').classList.add('hidden');
+
+    try {
+      // example fetch
+  
+      const res = await fetch('/api/furniture/image/', {
+        method: 'POST',
+        credentials: 'include',      // send sessionid cookie
+        headers: authHeaders(),      // include CSRF token
+        body: fd    // your FormData or JSON …
+      });
+      if (!res.ok) throw new Error(res.status);
+      const data = await res.json();
+      // show type & style
+      document.getElementById('type-display').textContent  = data.type;
+      document.getElementById('style-display').textContent = data.style;
+
+      // render shopping array
+      data.shopping.forEach(it => {
+        const div = document.createElement('div');
+        div.classList.add('item');
+        div.innerHTML = `
+          <img src="${it.imageUrl}" alt="${it.title}" />
+          <div class="info">
+            <a href="${it.link}" target="_blank"><strong>${it.title}</strong></a><br/>
+            Price: ${it.price}<br/>
+            Delivery: ${it.delivery}<br/>
+            Position: ${it.position}
+          </div>`;
+        disp.appendChild(div);
+      });
+
+      document.getElementById('image-result').classList.remove('hidden');
+    } catch(err) {
+      alert('Image search failed: ' + err.message);
+      console.error(err);
+    }
+  };
+
+  // — TEXT SEARCH (updated) —
+  document.getElementById('text-form').onsubmit = async e => {
+    e.preventDefault();
+    const fd = new FormData(e.target);
+    fd.append('color', document.getElementById('color').value);
+
+    // reset
+    document.getElementById('type-display-text').textContent = '';
+    document.getElementById('style-display-text').textContent = '';
+    const disp = document.getElementById('items-display');
+    disp.innerHTML = '';
+    document.getElementById('text-result').classList.add('hidden');
+
+    try {
+      const res = await fetch('/api/furniture/text/', {
+        method: 'POST',
+        credentials: 'include',      // send sessionid cookie
+        headers: authHeaders(),      // include CSRF token
+        body: fd    // your FormData
+      });
+      if (!res.ok) throw new Error(res.status);
+      const data = await res.json();
+
+      // show type & style
+      document.getElementById('type-display-text').textContent  = data.type;
+      document.getElementById('style-display-text').textContent = data.style;
+
+      // render shopping array
+      data.shopping.forEach(it => {
+        const div = document.createElement('div');
+        div.classList.add('item');
+        div.innerHTML = `
+          <img src="${it.imageUrl}" alt="${it.title}" />
+          <div class="info">
+            <a href="${it.link}" target="_blank"><strong>${it.title}</strong></a><br/>
+            Price: ${it.price}<br/>
+            Delivery: ${it.delivery}<br/>
+            Position: ${it.position}
+          </div>`;
+        disp.appendChild(div);
+      });
+
+      document.getElementById('text-result').classList.remove('hidden');
+    } catch(err) {
+      alert('Text search failed: ' + err.message);
+      console.error(err);
+    }
+  };
+</script>
+</body>
+</html>
