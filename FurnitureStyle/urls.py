@@ -46,4 +46,5 @@ urlpatterns = [
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),    
     # api
     path('api/furniture/', include('furniture.urls')),  # furniture scan
+    path('api/profiles/', include('profiles.urls')),  # user profile
 ]

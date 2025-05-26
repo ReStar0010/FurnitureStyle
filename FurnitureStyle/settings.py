@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     # my apps
     'furniture',
+    'profiles',
     # swagger
     'drf_yasg',
     # allauth

@@ -7,7 +7,8 @@ from rest_framework import status, permissions
 from rest_framework.authentication import SessionAuthentication
 from drf_yasg.utils import swagger_auto_schema
 
-from .serializers import PictureUploadSerializer, FurnitureTextSerializer
+from .models import SearchHistory
+from .serializers import PictureUploadSerializer, FurnitureTextSerializer, SearchHistorySerializer
 from .classifier import classify_furniture_from_image, classify_furniture_from_text
 from .search import search_furniture_by_text
 from .search import google_image_search
@@ -47,6 +48,14 @@ class FurnitureImageView(APIView):
 
         # NOTE - resposonse the result to frontend
         try:
+            # NOTE - search history
+            SearchHistory.objects.create(
+                user=request.user,
+                query_type='image',
+                color_mode=color_mode,
+                furniture_type=formated_query['type'],
+                furniture_style=formated_query['style']
+            )
             # NOTE - search the funiture with the LLM result(from image)
             shopping_results = search_furniture_by_text(formated_query)
             return Response(
@@ -82,6 +91,16 @@ class FurnitureTextAPIView(APIView):
         formated_query = classify_furniture_from_text(query, color_mode=color_mode) # formated_query = {type: "sofa", style: "modern"}
         # NOTE - search the furniture with the LLM result
         shopping_results = search_furniture_by_text(formated_query)
+        # NOTE - save the search history
+        SearchHistory.objects.create(
+            user=request.user,
+            query_type='text',
+            original_query=query,
+            color_mode=color_mode,
+            furniture_type=formated_query['type'],
+            furniture_style=formated_query['style']
+        )
+        
         return Response(
             {
                 "type": formated_query['type'],
@@ -91,6 +110,26 @@ class FurnitureTextAPIView(APIView):
             status=status.HTTP_200_OK
         )
     
+# ...existing code...
 
+class SearchHistoryAPIView(APIView):
+    authentication_classes = [SessionAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+    
+    @swagger_auto_schema(responses={200: SearchHistorySerializer(many=True)})
+    def get(self, request):
+        """
+        Retrieve the search history for the authenticated user
+        """
+        # Get last 20 searches by default
+        limit = request.query_params.get('limit', 20)
+        try:
+            limit = int(limit)
+        except (ValueError, TypeError):
+            limit = 20
+            
+        searches = SearchHistory.objects.filter(user=request.user)[:limit]
+        serializer = SearchHistorySerializer(searches, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
         
 
