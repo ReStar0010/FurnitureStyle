@@ -7,8 +7,8 @@ from rest_framework import status, permissions
 from rest_framework.authentication import SessionAuthentication
 from drf_yasg.utils import swagger_auto_schema
 
-from .models import SearchHistory
-from .serializers import PictureUploadSerializer, FurnitureTextSerializer, SearchHistorySerializer
+from .models import SearchHistory, FavoriteItem
+from .serializers import PictureUploadSerializer, FurnitureTextSerializer, SearchHistorySerializer, FavoriteItemSerializer, AddToFavoriteSerializer
 from .classifier import classify_furniture_from_image, classify_furniture_from_text
 from .search import search_furniture_by_text
 from .search import google_image_search
@@ -133,3 +133,82 @@ class SearchHistoryAPIView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
         
 
+class FavoritesAPIView(APIView):
+    authentication_classes = [SessionAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+    
+    @swagger_auto_schema(responses={200: FavoriteItemSerializer(many=True)})
+    def get(self, request):
+        """
+        Retrieve favorite furniture items for the authenticated user
+        """
+        favorites = FavoriteItem.objects.filter(user=request.user)
+        serializer = FavoriteItemSerializer(favorites, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    @swagger_auto_schema(request_body=AddToFavoriteSerializer)
+    def post(self, request):
+        """
+        Add a furniture item to favorites
+        """
+        serializer = AddToFavoriteSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        # Check if already in favorites
+        existing = FavoriteItem.objects.filter(
+            user=request.user,
+            link=serializer.validated_data['link']
+        ).first()
+        
+        if existing:
+            return Response(
+                {"message": "Item already in favorites"},
+                status=status.HTTP_200_OK
+            )
+        
+        # Create new favorite
+        favorite = FavoriteItem(
+            user=request.user,
+            title=serializer.validated_data['title'],
+            link=serializer.validated_data['link'],
+            price=serializer.validated_data['price'],
+            image_url=serializer.validated_data['image_url'],
+            position=serializer.validated_data.get('position'),
+            furniture_type=serializer.validated_data['furniture_type'],
+            furniture_style=serializer.validated_data['furniture_style']
+        )
+        favorite.save()
+        
+        result_serializer = FavoriteItemSerializer(favorite)
+        return Response(
+            result_serializer.data,
+            status=status.HTTP_201_CREATED
+        )
+
+class FavoriteDetailAPIView(APIView):
+    authentication_classes = [SessionAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get_object(self, pk, user):
+        try:
+            return FavoriteItem.objects.get(pk=pk, user=user)
+        except FavoriteItem.DoesNotExist:
+            raise status.HTTP_404_NOT_FOUND
+    
+    @swagger_auto_schema(responses={200: FavoriteItemSerializer()})
+    def get(self, request, pk):
+        """
+        Retrieve a specific favorite item
+        """
+        favorite = self.get_object(pk, request.user)
+        serializer = FavoriteItemSerializer(favorite)
+        return Response(serializer.data)
+    
+    @swagger_auto_schema(responses={204: "No Content"})
+    def delete(self, request, pk):
+        """
+        Remove an item from favorites
+        """
+        favorite = self.get_object(pk, request.user)
+        favorite.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)

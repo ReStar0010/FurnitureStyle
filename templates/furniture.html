@@ -10,6 +10,35 @@
     .item img { max-width: 120px; margin-right: 1rem; }
     .item .info { line-height: 1.4; }
     .hidden { display: none; }
+    .fav-btn { 
+      background-color: #f8f8f8; 
+      border: 1px solid #ddd; 
+      padding: 4px 8px; 
+      cursor: pointer; 
+      margin-top: 5px;
+      border-radius: 4px;
+    }
+    .fav-btn:hover { background-color: #f0f0f0; }
+    .fav-btn.added { 
+      background-color: #ffecb3; 
+      color: #ff8f00; 
+      border-color: #ffcc80;
+    }
+    #favorites-section { margin-top: 2rem; }
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background-color: #333;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 4px;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .toast.show {
+      opacity: 1;
+    }
   </style>
 </head>
 <body>
@@ -58,6 +87,18 @@
     </div>
   </section>
 
+  <hr/>
+
+  <!-- FAVORITES SECTION -->
+  <section id="favorites-section">
+    <h2>3. My Favorites</h2>
+    <button id="load-favorites">Load My Favorites</button>
+    <div id="favorites-display"></div>
+  </section>
+
+  <!-- Toast notification -->
+  <div id="toast" class="toast"></div>
+
 <script>
   function getCookie(name) {
     const match = document.cookie.match('(^|;)\\s*'+name+'\\s*=\\s*([^;]+)');
@@ -74,6 +115,84 @@
     }
     return headers;
   }
+
+  // Toast notification function
+  function showToast(message, duration = 3000) {
+    const toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.classList.add('show');
+    
+    setTimeout(() => {
+      toast.classList.remove('show');
+    }, duration);
+  }
+
+  // Add to favorites function
+  async function addToFavorites(item, furnitureType, furnitureStyle) {
+    try {
+      const res = await fetch('/api/furniture/favorites/', {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          ...authHeaders(),
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          title: item.title,
+          link: item.link,
+          price: item.price,
+          image_url: item.imageUrl,
+          position: item.position,
+          furniture_type: furnitureType,
+          furniture_style: furnitureStyle
+        })
+      });
+      
+      if (!res.ok) throw new Error(res.status);
+      const data = await res.json();
+      
+      if (res.status === 201) {
+        showToast('Added to favorites!');
+        return true;
+      } else {
+        showToast('Item already in favorites');
+        return false;
+      }
+    } catch(err) {
+      showToast('Failed to add to favorites: ' + err.message);
+      console.error(err);
+      return false;
+    }
+  }
+
+  // Render furniture item
+  function renderItem(item, container, furnitureType, furnitureStyle) {
+    const div = document.createElement('div');
+    div.classList.add('item');
+    div.innerHTML = `
+      <img src="${item.imageUrl}" alt="${item.title}" />
+      <div class="info">
+        <a href="${item.link}" target="_blank"><strong>${item.title}</strong></a><br/>
+        Price: ${item.price}<br/>
+        Delivery: ${item.delivery}<br/>
+        Position: ${item.position}<br/>
+        <button class="fav-btn">Add to Favorites</button>
+      </div>`;
+    
+    // Add event listener to the favorite button
+    const favBtn = div.querySelector('.fav-btn');
+    favBtn.addEventListener('click', async () => {
+      const success = await addToFavorites(item, furnitureType, furnitureStyle);
+      if (success) {
+        favBtn.textContent = 'Added to Favorites';
+        favBtn.classList.add('added');
+        favBtn.disabled = true;
+      }
+    });
+    
+    container.appendChild(div);
+  }
+
   // — IMAGE + COLOR SEARCH —
   document.getElementById('upload-form').onsubmit = async e => {
     e.preventDefault();
@@ -104,17 +223,7 @@
 
       // render shopping array
       data.shopping.forEach(it => {
-        const div = document.createElement('div');
-        div.classList.add('item');
-        div.innerHTML = `
-          <img src="${it.imageUrl}" alt="${it.title}" />
-          <div class="info">
-            <a href="${it.link}" target="_blank"><strong>${it.title}</strong></a><br/>
-            Price: ${it.price}<br/>
-            Delivery: ${it.delivery}<br/>
-            Position: ${it.position}
-          </div>`;
-        disp.appendChild(div);
+        renderItem(it, disp, data.type, data.style);
       });
 
       document.getElementById('image-result').classList.remove('hidden');
@@ -151,19 +260,9 @@
       document.getElementById('type-display-text').textContent  = data.type;
       document.getElementById('style-display-text').textContent = data.style;
 
-      // render shopping array
+      // render shopping array with favorites buttons
       data.shopping.forEach(it => {
-        const div = document.createElement('div');
-        div.classList.add('item');
-        div.innerHTML = `
-          <img src="${it.imageUrl}" alt="${it.title}" />
-          <div class="info">
-            <a href="${it.link}" target="_blank"><strong>${it.title}</strong></a><br/>
-            Price: ${it.price}<br/>
-            Delivery: ${it.delivery}<br/>
-            Position: ${it.position}
-          </div>`;
-        disp.appendChild(div);
+        renderItem(it, disp, data.type, data.style);
       });
 
       document.getElementById('text-result').classList.remove('hidden');
@@ -172,6 +271,79 @@
       console.error(err);
     }
   };
+
+  // — LOAD FAVORITES —
+  document.getElementById('load-favorites').addEventListener('click', async () => {
+    const favDisplay = document.getElementById('favorites-display');
+    favDisplay.innerHTML = '<p>Loading favorites...</p>';
+    
+    try {
+      const res = await fetch('/api/furniture/favorites/', {
+        method: 'GET',
+        credentials: 'include',
+        headers: authHeaders()
+      });
+      
+      if (!res.ok) throw new Error(res.status);
+      const data = await res.json();
+      
+      favDisplay.innerHTML = '';
+      
+      if (data.length === 0) {
+        favDisplay.innerHTML = '<p>No favorites saved yet.</p>';
+        return;
+      }
+      
+      data.forEach(fav => {
+        const div = document.createElement('div');
+        div.classList.add('item');
+        div.innerHTML = `
+          <img src="${fav.image_url}" alt="${fav.title}" />
+          <div class="info">
+            <a href="${fav.link}" target="_blank"><strong>${fav.title}</strong></a><br/>
+            Price: ${fav.price}<br/>
+            Type: ${fav.furniture_type} / Style: ${fav.furniture_style}<br/>
+            <button class="fav-btn remove-fav" data-id="${fav.id}">Remove from Favorites</button>
+          </div>`;
+        
+        favDisplay.appendChild(div);
+      });
+      
+      // Add event listeners to remove buttons
+      document.querySelectorAll('.remove-fav').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+          const id = e.target.dataset.id;
+          try {
+            const res = await fetch(`/api/furniture/favorites/${id}/`, {
+              method: 'DELETE',
+              credentials: 'include',
+              headers: authHeaders()
+            });
+            
+            if (res.status === 204) {
+              // Remove the item from the display
+              e.target.closest('.item').remove();
+              showToast('Removed from favorites');
+              
+              // Check if there are no items left
+              if (favDisplay.children.length === 0) {
+                favDisplay.innerHTML = '<p>No favorites saved yet.</p>';
+              }
+            } else {
+              throw new Error(res.status);
+            }
+          } catch(err) {
+            showToast('Failed to remove favorite: ' + err.message);
+            console.error(err);
+          }
+        });
+      });
+      
+    } catch(err) {
+      favDisplay.innerHTML = '<p>Failed to load favorites</p>';
+      console.error(err);
+    }
+  });
 </script>
 </body>
 </html>
