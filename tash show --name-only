@@ -1,0 +1,410 @@
+[1mdiff --git a/.gitignore b/.gitignore[m
+[1mnew file mode 100644[m
+[1mindex 0000000..62a0fb1[m
+[1m--- /dev/null[m
+[1m+++ b/.gitignore[m
+[36m@@ -0,0 +1,25 @@[m
+[32m+[m[32m# .gitignore[m
+[32m+[m[32m# 環境變數[m
+[32m+[m[32m.env[m
+[32m+[m
+[32m+[m[32m# Python[m
+[32m+[m[32m*.pyc[m
+[32m+[m[32m__pycache__/[m
+[32m+[m[32m*.pyo[m
+[32m+[m[32m*.pyd[m
+[32m+[m[32m.Python[m
+[32m+[m
+[32m+[m[32m# Django[m
+[32m+[m[32mdb.sqlite3[m
+[32m+[m[32mmedia/[m
+[32m+[m[32mstaticfiles/[m
+[32m+[m
+[32m+[m[32m# 編輯器[m
+[32m+[m[32m.vscode/[m
+[32m+[m[32m.idea/[m
+[32m+[m[32m*.swp[m
+[32m+[m[32m*.swo[m
+[32m+[m
+[32m+[m[32m# 作業系統[m
+[32m+[m[32m.DS_Store[m
+[32m+[m[32mThumbs.db[m
+\ No newline at end of file[m
+[1mdiff --git a/FurnitureStyle/__pycache__/__init__.cpython-313.pyc b/FurnitureStyle/__pycache__/__init__.cpython-313.pyc[m
+[1mindex 544684b..b5bd072 100644[m
+Binary files a/FurnitureStyle/__pycache__/__init__.cpython-313.pyc and b/FurnitureStyle/__pycache__/__init__.cpython-313.pyc differ
+[1mdiff --git a/FurnitureStyle/__pycache__/settings.cpython-313.pyc b/FurnitureStyle/__pycache__/settings.cpython-313.pyc[m
+[1mindex 1011b5c..d3b8e7a 100644[m
+Binary files a/FurnitureStyle/__pycache__/settings.cpython-313.pyc and b/FurnitureStyle/__pycache__/settings.cpython-313.pyc differ
+[1mdiff --git a/FurnitureStyle/__pycache__/urls.cpython-313.pyc b/FurnitureStyle/__pycache__/urls.cpython-313.pyc[m
+[1mindex d81e09d..322a07d 100644[m
+Binary files a/FurnitureStyle/__pycache__/urls.cpython-313.pyc and b/FurnitureStyle/__pycache__/urls.cpython-313.pyc differ
+[1mdiff --git a/FurnitureStyle/__pycache__/wsgi.cpython-313.pyc b/FurnitureStyle/__pycache__/wsgi.cpython-313.pyc[m
+[1mindex 97080fc..86314ee 100644[m
+Binary files a/FurnitureStyle/__pycache__/wsgi.cpython-313.pyc and b/FurnitureStyle/__pycache__/wsgi.cpython-313.pyc differ
+[1mdiff --git a/FurnitureStyle/settings.py b/FurnitureStyle/settings.py[m
+[1mindex 729e2d5..e0ecf7e 100644[m
+[1m--- a/FurnitureStyle/settings.py[m
+[1m+++ b/FurnitureStyle/settings.py[m
+[36m@@ -10,6 +10,7 @@[m [mFor the full list of settings and their values, see[m
+ https://docs.djangoproject.com/en/4.2/ref/settings/[m
+ """[m
+ [m
+[32m+[m[32mimport os[m
+ from pathlib import Path[m
+ [m
+ # Build paths inside the project like this: BASE_DIR / 'subdir'.[m
+[36m@@ -60,6 +61,8 @@[m [mINSTALLED_APPS = [[m
+     'allauth.account',[m
+     'allauth.socialaccount',[m
+     'allauth.socialaccount.providers.google',[m
+[32m+[m[32m    'corsheaders',[m
+[32m+[m[32m    'user_auth',[m
+ ][m
+ [m
+ # NOTE - setting by developer[m
+[36m@@ -80,6 +83,7 @@[m [mREST_FRAMEWORK = {[m
+ }[m
+ [m
+ MIDDLEWARE = [[m
+[32m+[m[32m    'corsheaders.middleware.CorsMiddleware',[m[41m [m
+     'django.middleware.security.SecurityMiddleware',[m
+     'django.contrib.sessions.middleware.SessionMiddleware',[m
+     'django.middleware.common.CommonMiddleware',[m
+[36m@@ -162,3 +166,50 @@[m [mSTATIC_URL = 'static/'[m
+ # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field[m
+ [m
+ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'[m
+[32m+[m
+[32m+[m[32mCORS_ALLOW_ALL_ORIGINS = True[m
+[32m+[m[32mCORS_ALLOWED_ORIGINS = [[m
+[32m+[m[32m    "http://localhost:5173",[m[41m [m
+[32m+[m[32m][m
+[32m+[m
+[32m+[m[32mCORS_ALLOW_ALL_ORIGINS = True[m[41m  [m
+[32m+[m[32mCORS_ALLOW_CREDENTIALS = True[m
+[32m+[m[32mCSRF_TRUSTED_ORIGINS = ['http://localhost:5173'][m[41m [m
+[32m+[m
+[32m+[m[32mCSRF_COOKIE_HTTPONLY = False  # 允許JavaScript訪問CSRF cookie[m
+[32m+[m[32mCSRF_USE_SESSIONS = False[m
+[32m+[m[32mCSRF_COOKIE_SECURE = False  # 開發環境設為False[m
+[32m+[m
+[32m+[m[32mAUTHENTICATION_BACKENDS = [[m
+[32m+[m[32m    'django.contrib.auth.backends.ModelBackend',  # Django 預設[m
+[32m+[m[32m    'allauth.account.auth_backends.AuthenticationBackend',  # allauth[m
+[32m+[m[32m][m
+[32m+[m
+[32m+[m[32m# Session 設定[m
+[32m+[m[32mSESSION_COOKIE_AGE = 86400  # 24 小時[m
+[32m+[m[32mSESSION_SAVE_EVERY_REQUEST = True[m
+[32m+[m[32mSESSION_EXPIRE_AT_BROWSER_CLOSE = False[m
+[32m+[m
+[32m+[m[32mSOCIALACCOUNT_PROVIDERS = {[m
+[32m+[m[32m    'google': {[m
+[32m+[m[32m        'APP': {[m
+[32m+[m[32m            'client_id': os.getenv('GOOGLE_CLIENT_ID'),[m
+[32m+[m[32m            'secret': os.getenv('GOOGLE_CLIENT_SECRET'),[m
+[32m+[m[32m            'key': ''[m
+[32m+[m[32m        },[m
+[32m+[m[32m        'SCOPE': [[m
+[32m+[m[32m            'profile',[m
+[32m+[m[32m            'email',[m
+[32m+[m[32m        ],[m
+[32m+[m[32m        'AUTH_PARAMS': {[m
+[32m+[m[32m            'access_type': 'online',[m
+[32m+[m[32m        },[m
+[32m+[m[32m        'OAUTH_PKCE_ENABLED': True,[m
+[32m+[m[32m    }[m
+[32m+[m[32m}[m
+[32m+[m[32mACCOUNT_EMAIL_REQUIRED = True[m
+[32m+[m[32mACCOUNT_USERNAME_REQUIRED = False[m
+[32m+[m[32mACCOUNT_AUTHENTICATION_METHOD = 'email'[m
+[32m+[m[32mACCOUNT_EMAIL_VERIFICATION = 'none'  # 或 'mandatory' 如果要驗證信箱[m
+[32m+[m[32mSOCIALACCOUNT_AUTO_SIGNUP = True[m
+[32m+[m[32mSOCIALACCOUNT_LOGIN_ON_GET = False[m
+[1mdiff --git a/FurnitureStyle/urls.py b/FurnitureStyle/urls.py[m
+[1mindex ef50399..f49d0a7 100644[m
+[1m--- a/FurnitureStyle/urls.py[m
+[1m+++ b/FurnitureStyle/urls.py[m
+[36m@@ -46,4 +46,5 @@[m [murlpatterns = [[m
+     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),    [m
+     # api[m
+     path('api/furniture/', include('furniture.urls')),  # furniture scan[m
+[32m+[m[32m    path('api/auth/', include('user_auth.urls'))[m
+ ][m
+[1mdiff --git a/db.sqlite3 b/db.sqlite3[m
+[1mindex 7575d53..26dc000 100644[m
+Binary files a/db.sqlite3 and b/db.sqlite3 differ
+[1mdiff --git a/furniture/__pycache__/__init__.cpython-313.pyc b/furniture/__pycache__/__init__.cpython-313.pyc[m
+[1mindex a4bf768..4c35c41 100644[m
+Binary files a/furniture/__pycache__/__init__.cpython-313.pyc and b/furniture/__pycache__/__init__.cpython-313.pyc differ
+[1mdiff --git a/furniture/__pycache__/admin.cpython-313.pyc b/furniture/__pycache__/admin.cpython-313.pyc[m
+[1mindex e61c43f..e43fb91 100644[m
+Binary files a/furniture/__pycache__/admin.cpython-313.pyc and b/furniture/__pycache__/admin.cpython-313.pyc differ
+[1mdiff --git a/furniture/__pycache__/apps.cpython-313.pyc b/furniture/__pycache__/apps.cpython-313.pyc[m
+[1mindex c1cd978..68afc97 100644[m
+Binary files a/furniture/__pycache__/apps.cpython-313.pyc and b/furniture/__pycache__/apps.cpython-313.pyc differ
+[1mdiff --git a/furniture/__pycache__/classifier.cpython-313.pyc b/furniture/__pycache__/classifier.cpython-313.pyc[m
+[1mindex 9346586..7467928 100644[m
+Binary files a/furniture/__pycache__/classifier.cpython-313.pyc and b/furniture/__pycache__/classifier.cpython-313.pyc differ
+[1mdiff --git a/furniture/__pycache__/models.cpython-313.pyc b/furniture/__pycache__/models.cpython-313.pyc[m
+[1mindex 710d04f..171ada8 100644[m
+Binary files a/furniture/__pycache__/models.cpython-313.pyc and b/furniture/__pycache__/models.cpython-313.pyc differ
+[1mdiff --git a/furniture/__pycache__/search.cpython-313.pyc b/furniture/__pycache__/search.cpython-313.pyc[m
+[1mindex 9234f94..11a4743 100644[m
+Binary files a/furniture/__pycache__/search.cpython-313.pyc and b/furniture/__pycache__/search.cpython-313.pyc differ
+[1mdiff --git a/furniture/__pycache__/serializers.cpython-313.pyc b/furniture/__pycache__/serializers.cpython-313.pyc[m
+[1mindex a9be406..3539057 100644[m
+Binary files a/furniture/__pycache__/serializers.cpython-313.pyc and b/furniture/__pycache__/serializers.cpython-313.pyc differ
+[1mdiff --git a/furniture/__pycache__/urls.cpython-313.pyc b/furniture/__pycache__/urls.cpython-313.pyc[m
+[1mindex 78337d8..4a192b8 100644[m
+Binary files a/furniture/__pycache__/urls.cpython-313.pyc and b/furniture/__pycache__/urls.cpython-313.pyc differ
+[1mdiff --git a/furniture/__pycache__/views.cpython-313.pyc b/furniture/__pycache__/views.cpython-313.pyc[m
+[1mindex 6df82b9..d2f7727 100644[m
+Binary files a/furniture/__pycache__/views.cpython-313.pyc and b/furniture/__pycache__/views.cpython-313.pyc differ
+[1mdiff --git a/furniture/migrations/__pycache__/__init__.cpython-313.pyc b/furniture/migrations/__pycache__/__init__.cpython-313.pyc[m
+[1mindex 52c6624..53d8e60 100644[m
+Binary files a/furniture/migrations/__pycache__/__init__.cpython-313.pyc and b/furniture/migrations/__pycache__/__init__.cpython-313.pyc differ
+[1mdiff --git a/package-lock.json b/package-lock.json[m
+[1mnew file mode 100644[m
+[1mindex 0000000..1b13bb3[m
+[1m--- /dev/null[m
+[1m+++ b/package-lock.json[m
+[36m@@ -0,0 +1,6 @@[m
+[32m+[m[32m{[m
+[32m+[m[32m  "name": "FurnitureStyle",[m
+[32m+[m[32m  "lockfileVersion": 3,[m
+[32m+[m[32m  "requires": true,[m
+[32m+[m[32m  "packages": {}[m
+[32m+[m[32m}[m
+[1mdiff --git a/third_party.env b/third_party.env[m
+[1mnew file mode 100644[m
+[1mindex 0000000..9dcb628[m
+[1m--- /dev/null[m
+[1m+++ b/third_party.env[m
+[36m@@ -0,0 +1,2 @@[m
+[32m+[m[32mGOOGLE_CLIENT_ID:1048945757728-qbb4760u69l3vmg6hetj4b1dd15gl95a.apps.googleusercontent.com[m
+[32m+[m[32mGOOGLE_CLIENT_SECRET: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[m
+\ No newline at end of file[m
+[1mdiff --git a/user_auth/__init__.py b/user_auth/__init__.py[m
+[1mnew file mode 100644[m
+[1mindex 0000000..e69de29[m
+[1mdiff --git a/user_auth/admin.py b/user_auth/admin.py[m
+[1mnew file mode 100644[m
+[1mindex 0000000..8c38f3f[m
+[1m--- /dev/null[m
+[1m+++ b/user_auth/admin.py[m
+[36m@@ -0,0 +1,3 @@[m
+[32m+[m[32mfrom django.contrib import admin[m
+[32m+[m
+[32m+[m[32m# Register your models here.[m
+[1mdiff --git a/user_auth/apps.py b/user_auth/apps.py[m
+[1mnew file mode 100644[m
+[1mindex 0000000..36452ed[m
+[1m--- /dev/null[m
+[1m+++ b/user_auth/apps.py[m
+[36m@@ -0,0 +1,6 @@[m
+[32m+[m[32mfrom django.apps import AppConfig[m
+[32m+[m
+[32m+[m
+[32m+[m[32mclass UserAuthConfig(AppConfig):[m
+[32m+[m[32m    default_auto_field = 'django.db.models.BigAutoField'[m
+[32m+[m[32m    name = 'user_auth'[m
+[1mdiff --git a/user_auth/migrations/__init__.py b/user_auth/migrations/__init__.py[m
+[1mnew file mode 100644[m
+[1mindex 0000000..e69de29[m
+[1mdiff --git a/user_auth/models.py b/user_auth/models.py[m
+[1mnew file mode 100644[m
+[1mindex 0000000..71a8362[m
+[1m--- /dev/null[m
+[1m+++ b/user_auth/models.py[m
+[36m@@ -0,0 +1,3 @@[m
+[32m+[m[32mfrom django.db import models[m
+[32m+[m
+[32m+[m[32m# Create your models here.[m
+[1mdiff --git a/user_auth/tests.py b/user_auth/tests.py[m
+[1mnew file mode 100644[m
+[1mindex 0000000..7ce503c[m
+[1m--- /dev/null[m
+[1m+++ b/user_auth/tests.py[m
+[36m@@ -0,0 +1,3 @@[m
+[32m+[m[32mfrom django.test import TestCase[m
+[32m+[m
+[32m+[m[32m# Create your tests here.[m
+[1mdiff --git a/user_auth/urls.py b/user_auth/urls.py[m
+[1mnew file mode 100644[m
+[1mindex 0000000..398f780[m
+[1m--- /dev/null[m
+[1m+++ b/user_auth/urls.py[m
+[36m@@ -0,0 +1,12 @@[m
+[32m+[m[32mfrom django.urls import path[m
+[32m+[m[32mfrom . import views[m
+[32m+[m
+[32m+[m[32murlpatterns = [[m
+[32m+[m[32m    path('csrf/', views.get_csrf, name='get-csrf'),[m
+[32m+[m[32m    path('login/', views.api_login, name='login'),[m
+[32m+[m[32m    path('logout/', views.api_logout, name='logout'),[m
+[32m+[m[32m    path('auth-status/', views.check_auth_status, name='auth-status'),[m
+[32m+[m[32m    path('register/', views.api_register, name='register'),[m
+[32m+[m[32m    path('user-exist-check/', views.user_exist_check, name='user-exist-check'),[m
+[32m+[m[32m    path('google/', views.google_auth, name='google_auth'),[m
+[32m+[m[32m][m
+\ No newline at end of file[m
+[1mdiff --git a/user_auth/views.py b/user_auth/views.py[m
+[1mnew file mode 100644[m
+[1mindex 0000000..12f5689[m
+[1m--- /dev/null[m
+[1m+++ b/user_auth/views.py[m
+[36m@@ -0,0 +1,151 @@[m
+[32m+[m[32mfrom django.contrib.auth import authenticate, login, logout[m
+[32m+[m[32mfrom django.http import JsonResponse[m
+[32m+[m[32mfrom django.views.decorators.csrf import ensure_csrf_cookie, csrf_exempt[m
+[32m+[m[32mimport json[m
+[32m+[m[32mfrom django.contrib.auth.models import User[m
+[32m+[m[32mimport requests[m
+[32m+[m[32mfrom allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter[m
+[32m+[m[32mfrom allauth.socialaccount.models import SocialLogin[m
+[32m+[m[32mfrom allauth.socialaccount.helpers import complete_social_login[m
+[32m+[m
+[32m+[m
+[32m+[m[32m@ensure_csrf_cookie[m
+[32m+[m[32mdef get_csrf(request):[m
+[32m+[m[32m    return JsonResponse({"success": True})[m
+[32m+[m
+[32m+[m
+[32m+[m[32mdef user_exist_check(request):[m
+[32m+[m[32m    username = request.GET.get('username')[m
+[32m+[m[32m    if User.objects.filter(username=username).exists():[m
+[32m+[m[32m        return JsonResponse({"success": False, "error": "使用者名稱已存在"})[m
+[32m+[m[32m    else:[m
+[32m+[m[32m        return JsonResponse({"success": True, "message": "用戶名可用"})[m
+[32m+[m
+[32m+[m
+[32m+[m[32mdef api_login(request):[m
+[32m+[m[32m    data = json.loads(request.body)[m
+[32m+[m[32m    username = data.get('username')[m
+[32m+[m[32m    password = data.get('password')[m
+[32m+[m
+[32m+[m[32m    user = authenticate(username=username, password=password)[m
+[32m+[m[32m    if user is not None:[m
+[32m+[m[32m        login(request, user)[m
+[32m+[m[32m        return JsonResponse({[m
+[32m+[m[32m            "success": True,[m
+[32m+[m[32m            "user": {"username": user.username, "email": user.email}[m
+[32m+[m[32m        })[m
+[32m+[m[32m    return JsonResponse({"success": False}, status=400)[m
+[32m+[m
+[32m+[m
+[32m+[m[32mdef api_logout(request):[m
+[32m+[m[32m    logout(request)[m
+[32m+[m[32m    return JsonResponse({"success": True})[m
+[32m+[m
+[32m+[m
+[32m+[m[32mdef check_auth_status(request):[m
+[32m+[m[32m    if request.user.is_authenticated:[m
+[32m+[m[32m        return JsonResponse({[m
+[32m+[m[32m            'isAuthenticated': True,[m
+[32m+[m[32m            'user': {[m
+[32m+[m[32m                'username': request.user.username,[m
+[32m+[m[32m                'email': request.user.email,[m
+[32m+[m[32m            }[m
+[32m+[m[32m        })[m
+[32m+[m[32m    else:[m
+[32m+[m[32m        return JsonResponse({'isAuthenticated': False})[m
+[32m+[m
+[32m+[m
+[32m+[m[32mdef api_register(request):[m
+[32m+[m[32m    data = json.loads(request.body)[m
+[32m+[m[32m    username = data.get('username')[m
+[32m+[m[32m    password = data.get('password')[m
+[32m+[m
+[32m+[m[32m    if User.objects.filter(username=username).exists():[m
+[32m+[m[32m        return JsonResponse({"success": False, "error": "使用者名稱已存在"}, status=400)[m
+[32m+[m
+[32m+[m[32m    user = User.objects.create_user(username=username, password=password)[m
+[32m+[m[32m    # login(request, user)[m
+[32m+[m[32m    return JsonResponse({[m
+[32m+[m[32m        "success": True,[m
+[32m+[m[32m        "user": {"username": user.username, "email": user.email}[m
+[32m+[m[32m    })[m
+[32m+[m
+[32m+[m[32m    if request.user.is_authenticated:[m
+[32m+[m[32m        return JsonResponse({[m
+[32m+[m[32m            "success": True,[m
+[32m+[m[32m            "user": {"username": request.user.username, "email": request.user.email}[m
+[32m+[m[32m        })[m
+[32m+[m[32m    return JsonResponse({"success": False}, status=401)[m
+[32m+[m
+[32m+[m
+[32m+[m[32m@csrf_exempt[m
+[32m+[m[32mdef google_auth(request):[m
+[32m+[m[32m    """簡化版 Google 登入"""[m
+[32m+[m[32m    try:[m
+[32m+[m[32m        print("=== Google Auth Start ===")[m
+[32m+[m
+[32m+[m[32m        data = json.loads(request.body)[m
+[32m+[m[32m        access_token = data.get('access_token')[m
+[32m+[m
+[32m+[m[32m        if not access_token:[m
+[32m+[m[32m            return JsonResponse({[m
+[32m+[m[32m                'success': False,[m
+[32m+[m[32m                'error': '缺少 access_token'[m
+[32m+[m[32m            }, status=400)[m
+[32m+[m
+[32m+[m[32m        # 向 Google 驗證 token[m
+[32m+[m[32m        google_user_info_url = 'https://www.googleapis.com/oauth2/v2/userinfo'[m
+[32m+[m[32m        response = requests.get([m
+[32m+[m[32m            google_user_info_url,[m
+[32m+[m[32m            params={'access_token': access_token}[m
+[32m+[m[32m        )[m
+[32m+[m
+[32m+[m[32m        if response.status_code != 200:[m
+[32m+[m[32m            return JsonResponse({[m
+[32m+[m[32m                'success': False,[m
+[32m+[m[32m                'error': 'Google token 驗證失敗'[m
+[32m+[m[32m            }, status=400)[m
+[32m+[m
+[32m+[m[32m        google_user_data = response.json()[m
+[32m+[m[32m        email = google_user_data.get('email')[m
+[32m+[m[32m        google_id = google_user_data.get('id')[m
+[32m+[m
+[32m+[m[32m        print(f"Google user: {email}")[m
+[32m+[m
+[32m+[m[32m        # 找現有用戶或建立新用戶[m
+[32m+[m[32m        try:[m
+[32m+[m[32m            user = User.objects.get(email=email)[m
+[32m+[m[32m            action = 'login'[m
+[32m+[m[32m            print(f"現有用戶登入: {user.username}")[m
+[32m+[m[32m        except User.DoesNotExist:[m
+[32m+[m[32m            # 建立新用戶[m
+[32m+[m[32m            user = User.objects.create_user([m
+[32m+[m[32m                username=google_user_data.get('name'),[m
+[32m+[m[32m                email=email[m
+[32m+[m[32m            )[m
+[32m+[m[32m            action = 'register'[m
+[32m+[m[32m            print(f"新用戶註冊: {user.username}")[m
+[32m+[m
+[32m+[m
+[32m+[m[32m        login(request, user, backend='django.contrib.auth.backends.ModelBackend')[m
+[32m+[m
+[32m+[m[32m        return JsonResponse({[m
+[32m+[m[32m            'success': True,[m
+[32m+[m[32m            'action': action,[m
+[32m+[m[32m            'user': {[m
+[32m+[m[32m                'id': user.id,[m
+[32m+[m[32m                'username': google_user_data.get('name'),[m
+[32m+[m[32m                'email': user.email,[m
+[32m+[m[32m                'picture': google_user_data.get('picture'),[m
+[32m+[m[32m            }[m
+[32m+[m[32m        })[m
+[32m+[m
+[32m+[m[32m    except Exception as e:[m
+[32m+[m[32m        print(f"Error: {str(e)}")[m
+[32m+[m[32m        import traceback[m
+[32m+[m[32m        print(traceback.format_exc())[m
+[32m+[m
+[32m+[m[32m        return JsonResponse({[m
+[32m+[m[32m            'success': False,[m
+[32m+[m[32m            'error': f'錯誤: {str(e)}'[m
+[32m+[m[32m        }, status=500)[m
+\ No newline at end of file[m

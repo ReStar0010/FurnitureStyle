@@ -1,0 +1,25 @@
+# .gitignore
+# 環境變數
+.env
+
+# Python
+*.pyc
+__pycache__/
+*.pyo
+*.pyd
+.Python
+
+# Django
+db.sqlite3
+media/
+staticfiles/
+
+# 編輯器
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 作業系統
+.DS_Store
+Thumbs.db
