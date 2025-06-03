@@ -7,5 +7,6 @@ urlpatterns = [
     path('search-history/', SearchHistoryAPIView.as_view(), name='search-history'),
     path('favorites/', FavoritesAPIView.as_view(), name='favorites'),
     path('favorites/<int:pk>/', FavoriteDetailAPIView.as_view(), name='favorite-detail'),
+    path('favorites/remove-by-link/', FavoriteRemoveByLinkAPIView.as_view(), name='remove-favorite-by-link')
 ]
 

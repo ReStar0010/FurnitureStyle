@@ -212,3 +212,28 @@ class FavoriteDetailAPIView(APIView):
         favorite = self.get_object(pk, request.user)
         favorite.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+class FavoriteRemoveByLinkAPIView(APIView):
+    authentication_classes = [SessionAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def delete(self, request):
+        """
+        Remove an item from favorites by link
+        """
+        link = request.data.get('link')
+        if not link:
+            return Response(
+                {"error": "Link is required"}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            favorite = FavoriteItem.objects.get(user=request.user, link=link)
+            favorite.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except FavoriteItem.DoesNotExist:
+            return Response(
+                {"error": "Favorite not found"}, 
+                status=status.HTTP_404_NOT_FOUND
+            )
