@@ -21,12 +21,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-l198cu)!nb^iqsov7x9-+z9s#=@g@h&^@v%04ff@1^#&kn3ihb'
+SECRET_KEY = os.environ['DJANGO_SECRET_KEY']
 
 #NOTE - API_KEY
-GOOGLE_API_KEY = 'AIzaSyByuMqM3usEX8raLKigbmy3Xm5atMC7yMM'
+GOOGLE_API_KEY = os.getenv('GOOGLE_API_KEY', '')
 GOOGLE_CSE_ID = '12a996b57292848bb'
-OPENAI_API_KEY = "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"
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
 GOOGLE_CLIENT_ID = "559743627689-n55sf12ut0s2ckquvvrutldfugehiefe.apps.googleusercontent.com"
 
 #NOTE - setting by developer
